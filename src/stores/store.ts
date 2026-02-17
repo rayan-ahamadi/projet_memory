@@ -45,6 +45,7 @@ interface StoreState {
 
   startSession: (categoryId: number, themeId: number) => void;
   answerCard: (isCorrect: boolean) => void;
+  nextCard: () => void;
 }
 
 // Charger les données initiales depuis le localStorage
@@ -84,7 +85,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           : category,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return { categories: updatedCategories };
     });
@@ -107,7 +108,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           : category,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return { categories: updatedCategories };
     });
@@ -133,7 +134,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           : category,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return { categories: updatedCategories };
     });
@@ -142,7 +143,7 @@ export const useStore = create<StoreState>()((set, get) => ({
   addCategory: (category) => {
     set((state) => {
       const updatedCategories = [...state.categories, category];
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
       return { categories: updatedCategories };
     });
   },
@@ -153,7 +154,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           ? { ...category, ...updatedCategory }
           : category,
       );
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
       return { categories: updatedCategories };
     });
   },
@@ -163,7 +164,7 @@ export const useStore = create<StoreState>()((set, get) => ({
         (category) => category.id !== categoryId,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return {
         categories: updatedCategories,
@@ -184,7 +185,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           : category,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return { categories: updatedCategories };
     });
@@ -202,7 +203,7 @@ export const useStore = create<StoreState>()((set, get) => ({
             }
           : category,
       );
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
       return { categories: updatedCategories };
     });
   },
@@ -218,7 +219,7 @@ export const useStore = create<StoreState>()((set, get) => ({
           : category,
       );
 
-      saveData({ categories: updatedCategories });
+      saveData(updatedCategories);
 
       return { categories: updatedCategories };
     });
@@ -278,7 +279,26 @@ export const useStore = create<StoreState>()((set, get) => ({
       return c;
     });
 
-    saveData({ categories: updatedCategories });
+    saveData(updatedCategories);
     set({ categories: updatedCategories });
+
+    // Retirer la carte de la session
+    set((state) => ({
+      sessionsCards: state.sessionsCards.filter((c) => c.id !== card.id),
+    }));
+
+    // Changer la carte actuelle par la suivante
+    get().nextCard();
+  },
+
+  nextCard: () => {
+    // Trouver l'index de la carte actuelle dans sessionsCards
+    const currentIndex = get().sessionsCards.findIndex(
+      (card) => card.id === get().currentCard?.id,
+    );
+
+    // Passer à la carte suivante ou mettre currentCard à null si c'était la dernière
+    const nextCard = get().sessionsCards[currentIndex + 1] || null;
+    set({ currentCard: nextCard });
   },
 }));
